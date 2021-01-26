@@ -4,21 +4,17 @@ using UnityEngine;
 
 public class Pedal : MonoBehaviour
 {
-    public float speed = 20f;
+    private float speed = 7f;
     private float input;
-    // Start is called before the first frame update
-    void Start()
-    {
 
-    }
-
-    // Update is called once per frame
     void Update()
     {
+        if (GameManager.isDead)
+            return;
         input = Input.GetAxisRaw("Horizontal");
     }
     private void FixedUpdate()
     {
-        GetComponent<Rigidbody2D>().velocity = Vector2.right * speed * input;
+        GetComponent<Rigidbody2D>().velocity = Vector2.right * input * speed;
     }
 }
