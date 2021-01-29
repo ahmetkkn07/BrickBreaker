@@ -999,7 +999,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 7f596caecc7454f83bab8b7fec9a9ef1, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -1095,7 +1095,7 @@ AudioSource:
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: ee1f5fae98eba48cda7505edb870f0fe, type: 3}
-  m_PlayOnAwake: 1
+  m_PlayOnAwake: 0
   m_Volume: 1
   m_Pitch: 1
   Loop: 0
@@ -1370,7 +1370,7 @@ GameObject:
   - component: {fileID: 1476081241}
   m_Layer: 0
   m_Name: _Scripts
-  m_TagString: Untagged
+  m_TagString: GameManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1390,6 +1390,7 @@ MonoBehaviour:
   GameUI: {fileID: 182968353}
   LiveText: {fileID: 1510240954}
   ScoreText: {fileID: 214679865}
+  LevelText: {fileID: 1218027558}
 --- !u!4 &1476081242
 Transform:
   m_ObjectHideFlags: 0
@@ -2098,7 +2099,7 @@ MonoBehaviour:
   LeftBrictText: {fileID: 811684522}
   BrokenBrickText: {fileID: 1968385916}
   bricks: []
-  LevelText: {fileID: 0}
+  LevelText: {fileID: 1218027558}
 --- !u!4 &1821766825
 Transform:
   m_ObjectHideFlags: 0

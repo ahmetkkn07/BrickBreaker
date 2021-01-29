@@ -6,181 +6,114 @@ using UnityEngine.SceneManagement;
 
 public class Ball : MonoBehaviour
 {
-    public GameObject pedal;
-    public GameObject GameOverUI;
-    public Text LevelText;
-    public AudioSource Crash;
-    public AudioSource Break;
+    public GameObject pedal; //pedal nesnesi
+    public GameObject GameOverUI; //oyun bitince gözüken ekran
+    public Text LevelText; //toast mesaj yaptığımız text nesnesi
+    public AudioSource Crash; //top, tuğla harici nesnelere çarpınca çalan ses
+    public AudioSource Break; //tuğla kırılma sesi
+    public bool isRespawned = true; //kontrol değişkeni
 
-    private float speed = 8f;
-    private float limit = 3f;
-    public bool isRespawned = true;
+    private GameManager GameManager; //GameManager içerisindeki metotlara ulaşmak için referans
+    private float speed = 8f; //topun hızı
+    private float limit = 3f; //x eksenindeki atış vektörünün sınırı
+    private float posx = -9999; //x ekseninde sıkışma kontrolü için konum
+    private float posy = -9999; //y eksenindeki sıkışma kontrolü için konum
+    private int colCountx = 0; //x ekseninde sekme sayısı
+    private int colCounty = 0; // y ekseninde sekme sayısı
 
-    private float posx = -9999;
-    private float posy = -9999;
-    private int colCountx = 0;
-    private int colCounty = 0;
-
-    // Start is called before the first frame update
     void Start()
     {
-        GameOverUI.SetActive(false);
-        Respawn();
+        GameManager = GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager>(); //GameManager nesnesini al
+        GameOverUI.SetActive(false); //oyun bitti ekranını devre dışı yap
+        Respawn(true); //topu başlangıca getir
     }
 
-    // Update is called once per frame
     void Update()
     {
-        if (isRespawned)
+        if (isRespawned) //eğer yeniden doğmuş ise
         {
-            pedal.transform.position = new Vector3(0, -4.5f, 0);
-            if (Input.GetKeyDown(KeyCode.Space))
-            {
-                Push();
-            }
+            pedal.transform.position = new Vector3(0, -4.5f, 0); //pedalı başlangıç konumuna getir
+            if (Input.GetKeyDown(KeyCode.Space)) //boşluk tuşuna basılmış ise
+                Push(); //topu fırlatan fonksiyonu çağır
         }
-        if (colCountx >= 2 || colCounty >= 2)
+        if (colCountx >= 2 || colCounty >= 2) //eğer sıkışma var ise
         {
-            showToast("Top sıkıştığı için tekrar atış yapmalısınız!\nBoşluk tuşuna basarak atış yapabilirsiniz.", 3);
-            transform.position = new Vector3(0, -4.1748f, 0);
-            GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
-            pedal.transform.position = new Vector3(0, -4.5f, 0);
-            isRespawned = true;
-            colCountx = 0;
-            colCounty = 0;
+            GameManager.showToast("Top sıkıştığı için tekrar atış yapmalısınız!\nBoşluk tuşuna basarak atış yapabilirsiniz.", 3); //ekranda mesaj göster
+            Initialize(); //başlangıç haline getir
+            isRespawned = true; //yeniden başlatıldı
+            colCountx = 0; //kontrol değişkenlerini temizle
+            colCounty = 0;//kontrol değişkenlerini temizle
         }
-
     }
-
+    private void Initialize()
+    {
+        transform.position = new Vector3(0, -4.1748f, 0); //topu başlangıç konumuna al
+        GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);//topun hız vektörünü sıfırla
+        pedal.transform.position = new Vector3(0, -4.5f, 0);//pedalı başlangıç konumuna getir
+    }
     public void Respawn(bool isLevelUp = false)
     {
-        colCountx = 0;
-        colCounty = 0;
-        if (GameManager.Live > 0)
+        colCountx = 0;//kontrol değişkenlerini temizle
+        colCounty = 0;//kontrol değişkenlerini temizle
+        if (isLevelUp && GameManager.Live == 0) //eğer yeni seviyeye geçiliyor ise
+            GameManager.Live++; //azalan canı artır
+        if (GameManager.Live > 0) // eğer can 0'dan az ise
         {
-            transform.position = new Vector3(0, -4.1748f, 0);
-            GetComponent<Rigidbody2D>().velocity = new Vector2(0, 0);
-            pedal.transform.position = new Vector3(0, -4.5f, 0);
-            isRespawned = true;
-            if (!isLevelUp)
-                GameManager.Live--;
+            Initialize(); //başlangıç haline getir
+            isRespawned = true; //yeniden başlatıldı
+            if (!isLevelUp) //eğer yeni seviye değilse
+                GameManager.Live--; //canı azalt
         }
-        else
+        else //yeni seviyeye geçilmiyor ise
         {
-            GameManager.isDead = true;
-            GameOverUI.SetActive(true);
+            GameManager.isDead = true; //öldür
+            gameObject.SetActive(false); //topu kaldır
+            pedal.SetActive(false); //pedalı kaldır
+            GameOverUI.SetActive(true); //oyun bitti ekranını göster
         }
     }
 
     public void Push()
     {
-        //GetComponent<Rigidbody2D>().AddForce(new Vector2(Random.Range(-speed, speed), speed), ForceMode2D.Impulse);
-        //GetComponent<Rigidbody2D>().AddForce(new Vector2(-5, speed), ForceMode2D.Impulse);
-        float x = Random.Range(-limit, limit);
-        float y = Mathf.Sqrt(speed * speed - x * x);
-        GetComponent<Rigidbody2D>().AddForce(new Vector2(x, y), ForceMode2D.Impulse);
-        isRespawned = false;
+        float x = 0; //vektörün x bileşeni
+        while (x < 0.5f && x > -0.5f) //top dikey açıyla gitmesin
+            x = Random.Range(-limit, limit); //limitler arasında rastgele sayı üret
+        float y = Mathf.Sqrt(speed * speed - x * x); //Pisagor teoremi ile bileşke vektörü sabit tutacak y bileşenini belirle
+        GetComponent<Rigidbody2D>().AddForce(new Vector2(x, y), ForceMode2D.Impulse); //tek seferlik itiş gücü uygula
+        isRespawned = false; //yeniden başlatıldı değişkenini false yap
     }
 
     public void Restart()
     {
-        GameManager.Live = 3;
-        GameManager.Level = 1;
-        GameManager.isDead = false;
-        SceneManager.LoadScene("Game");
+        GameManager.Live = 3; //canı ilk haline getir
+        GameManager.Level = 1; //seviyeyi başa al
+        GameManager.isDead = false; //dirilt
+        SceneManager.LoadScene("Game"); //sahneyi yükle
     }
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.tag.Equals("Brick"))
-            Break.Play();
-        else
-            Crash.Play();
-        if (collision.gameObject.name.Equals("WallUp"))
+        if (collision.gameObject.tag.Equals("Brick")) //çarpılan nesne tupla ise
+            Break.Play(); //tuğla kırma sesi çal
+        else//değilse
+            Crash.Play();//sekme sesi çal
+
+
+        if (collision.gameObject.name.Equals("WallUp")) //çarpılan nesne üst duvar ise
         {
-            if (posx == gameObject.transform.position.x)
-            {
-                colCountx++;
-            }
+            if (posx == gameObject.transform.position.x) //konum, önceki ile aynı ise
+                colCountx++; //sekme sayısını artır
+            else //değilse
+                colCountx = 0;//sekme sayısını sıfırla
+            posx = gameObject.transform.position.x; //x konumuna al
+        }
+        else if (collision.gameObject.name.Equals("WallLeft") || collision.gameObject.name.Equals("WallRight")) //sağ veya sol duvar ise
+        {
+            if (posy == gameObject.transform.position.y)//konum, önceki ile aynı ise
+                colCounty++; //sekme sayısını artır
             else
-            {
-                colCountx = 0;
-            }
-            posx = gameObject.transform.position.x;
-        }
-        else if (collision.gameObject.name.Equals("WallLeft") || collision.gameObject.name.Equals("WallRight"))
-        {
-            if (posy == gameObject.transform.position.y)
-            {
-                colCounty++;
-            }
-            else
-            {
-                colCounty = 0;
-            }
-            posy = gameObject.transform.position.y;
-        }
-    }
-
-
-
-    void showToast(string text,
-    int duration)
-    {
-        StartCoroutine(showToastCOR(text, duration));
-    }
-
-    private IEnumerator showToastCOR(string text,
-        int duration)
-    {
-        Color orginalColor = LevelText.color;
-
-        LevelText.text = text;
-        LevelText.enabled = true;
-
-        //Fade in efekti
-        yield return fadeInAndOut(LevelText, true, 0.5f);
-
-        //süre kadar bekle
-        float counter = 0;
-        while (counter < duration)
-        {
-            counter += Time.deltaTime;
-            yield return null;
-        }
-
-        //Fade out efekti
-        yield return fadeInAndOut(LevelText, false, 0.5f);
-
-        LevelText.enabled = false;
-        LevelText.color = orginalColor;
-    }
-
-    IEnumerator fadeInAndOut(Text targetText, bool fadeIn, float duration)
-    {
-        //fadein mi değil mi?
-        float a, b;
-        if (fadeIn)
-        {
-            a = 0f;
-            b = 1f;
-        }
-        else
-        {
-            a = 1f;
-            b = 0f;
-        }
-
-        Color currentColor = Color.clear;
-        float counter = 0f;
-
-        while (counter < duration)
-        {
-            counter += Time.deltaTime;
-            float alpha = Mathf.Lerp(a, b, counter / duration);
-
-            targetText.color = new Color(currentColor.r, currentColor.g, currentColor.b, alpha);
-            yield return null;
+                colCounty = 0;//sekme sayısını sıfırla
+            posy = gameObject.transform.position.y; //y konumunu al
         }
     }
 }

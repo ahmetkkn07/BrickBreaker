@@ -4,29 +4,25 @@ using UnityEngine;
 
 public class WallDown : MonoBehaviour
 {
-    public GameObject ball;
-    private bool isColliding;
+    public GameObject ball; //top nesnesi
+    private bool isColliding; //kontrol
+    private Ball ballScript; //bal scripti içindeki fonksiyona erişmek için
 
-    private Ball ballScript;
-    // Start is called before the first frame update
     void Start()
     {
-        ballScript = ball.GetComponent<Ball>();
+        ballScript = ball.GetComponent<Ball>(); //ball scriptini toptan al
     }
 
-    // Update is called once per frame
     void Update()
     {
-        isColliding = false;
+        isColliding = false; //kontrolü sıfırla
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (isColliding)
-        {
-            return;
-        }
-        isColliding = true;
-        ballScript.Respawn();
+        if (isColliding) //eğer çarpışma devam ediyor ise
+            return; //bir şey yapma
+        isColliding = true; //kontrolü ayarla
+        ballScript.Respawn(); //topu başlangıca alan fonkiyonu çağır
     }
 }
